@@ -1,0 +1,206 @@
+
+@namespace fs_2025_a_user_accounts_with_roles_74723.Components
+@using fs_user_accounts.Data
+@using AppApp.Domain
+
+<h2 class="mb-4">Vehicles</h2>
+
+<div class="mb-3">
+    <div class="row g-2 align-items-center">
+        <div class="col-md-3">
+            <input class="form-control"
+                   placeholder="Manufacturer..."
+                   @bind="manufacturerFilter"
+                   @bind:event="oninput" />
+        </div>
+
+        <div class="col-md-3">
+            <input class="form-control"
+                   placeholder="Model..."
+                   @bind="modelFilter"
+                   @bind:event="oninput" />
+        </div>
+
+        <div class="col-md-3">
+            <select class="form-select"
+                    @bind="transmissionFilter"
+                    @bind:event="onchange">
+                <option value="">Any transmission</option>
+                <option value="Manual">Manual</option>
+                <option value="Automatic">Automatic</option>
+                <option value="Dual-Clutch">Dual-Clutch</option>
+            </select>
+        </div>
+
+        <div class="col-md-1">
+            <input type="number" class="form-control"
+                   placeholder="Min year"
+                   @bind="minYear"
+                   @bind:event="oninput" />
+        </div>
+
+        <div class="col-md-1">
+            <input type="number" class="form-control"
+                   placeholder="Max year"
+                   @bind="maxYear"
+                   @bind:event="oninput" />
+        </div>
+
+        <div class="col-md-1">
+            <button class="btn btn-outline-secondary w-100"
+                    @onclick="ResetFilters">
+                Reset
+            </button>
+        </div>
+    </div>
+</div>
+
+@if (vehicles is null)
+{
+    <div>Loading...</div>
+}
+else if (!filtered.Any())
+{
+    <div class="alert alert-info">No vehicles match the filter.</div>
+}
+else
+{
+    <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+                <th>Manufacturer</th>
+                <th>Model</th>
+                <th>Year</th>
+                <th>Engine</th>
+                <th>Transmission</th>
+                <th class="text-end">Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var v in filtered)
+            {
+                <tr>
+                    <td>@v.Manufacturer</td>
+                    <td>@v.Model</td>
+                    <td>@v.Year</td>
+                    <td>@v.Engine</td>
+                    <td>@v.Transmission</td>
+                    <td class="text-end">@v.Price.ToString("C0")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Vehicle> vehicles = new();
+    private List<Vehicle> filtered = new();
+
+    private string _manufacturerFilter = string.Empty;
+    private string _modelFilter = string.Empty;
+    private string _transmissionFilter = string.Empty;
+    private int? _minYear;
+    private int? _maxYear;
+
+    protected override void OnInitialized()
+    {
+        vehicles = CarMockData.Vehicles();
+        filtered = vehicles;
+    }
+
+    private string manufacturerFilter
+    {
+        get => _manufacturerFilter;
+        set
+        {
+            if (_manufacturerFilter != value)
+            {
+                _manufacturerFilter = value;
+                ApplyFilters();
+            }
+        }
+    }
+
+    private string modelFilter
+    {
+        get => _modelFilter;
+        set
+        {
+            if (_modelFilter != value)
+            {
+                _modelFilter = value;
+                ApplyFilters();
+            }
+        }
+    }
+
+    private string transmissionFilter
+    {
+        get => _transmissionFilter;
+        set
+        {
+            if (_transmissionFilter != value)
+            {
+                _transmissionFilter = value;
+                ApplyFilters();
+            }
+        }
+    }
+
+    private int? minYear
+    {
+        get => _minYear;
+        set
+        {
+            _minYear = value;
+            ApplyFilters();
+        }
+    }
+
+    private int? maxYear
+    {
+        get => _maxYear;
+        set
+        {
+            _maxYear = value;
+            ApplyFilters();
+        }
+    }
+
+    private void ApplyFilters()
+    {
+        var query = vehicles.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(manufacturerFilter))
+            query = query.Where(v =>
+                v.Manufacturer?.Contains(manufacturerFilter, StringComparison.OrdinalIgnoreCase) == true);
+
+        if (!string.IsNullOrWhiteSpace(modelFilter))
+            query = query.Where(v =>
+                v.Model?.Contains(modelFilter, StringComparison.OrdinalIgnoreCase) == true);
+
+        if (!string.IsNullOrWhiteSpace(transmissionFilter))
+            query = query.Where(v =>
+                v.Transmission?.Equals(transmissionFilter, StringComparison.OrdinalIgnoreCase) == true);
+
+        if (minYear.HasValue)
+            query = query.Where(v => v.Year >= minYear.Value);
+
+        if (maxYear.HasValue)
+            query = query.Where(v => v.Year <= maxYear.Value);
+
+        filtered = query.OrderBy(v => v.Manufacturer).ThenBy(v => v.Model).ToList();
+        StateHasChanged();
+    }
+
+    private void ResetFilters()
+    {
+        _manufacturerFilter = string.Empty;
+        _modelFilter = string.Empty;
+        _transmissionFilter = string.Empty;
+        _minYear = null;
+        _maxYear = null;
+        filtered = vehicles.ToList();
+        StateHasChanged();
+    }
+}

@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36511.14 d17.14
+VisualStudioVersion = 17.14.36511.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fs-2025-a-user-accounts-with-roles-74723", "fs-2025-a-user-accounts-with-roles-74723\fs-2025-a-user-accounts-with-roles-74723.csproj", "{772E07F0-2E67-4F01-96B5-0352DA4968D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "App.Domain", "App.Domain\App.Domain.csproj", "{015BE386-14A7-488F-ABF4-4C962A73CD69}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppApp.Domain", "App.Domain\AppApp.Domain.csproj", "{015BE386-14A7-488F-ABF4-4C962A73CD69}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "App.Tests", "App.Tests\App.Tests.csproj", "{45AB44D2-5D37-4C44-9D92-9DB4812FD1A8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppTest.Tests", "App.Tests\AppTest.Tests.csproj", "{45AB44D2-5D37-4C44-9D92-9DB4812FD1A8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

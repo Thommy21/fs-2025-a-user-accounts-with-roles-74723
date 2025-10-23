@@ -1,4 +1,4 @@
-﻿namespace App.Domain
+﻿namespace AppApp.Domain
 {
     public class Patient
     {

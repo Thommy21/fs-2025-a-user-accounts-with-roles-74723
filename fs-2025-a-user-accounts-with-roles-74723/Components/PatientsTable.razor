@@ -1,0 +1,77 @@
+@namespace fs_2025_a_user_accounts_with_roles_74723.Components
+@using fs_user_accounts.Data
+
+@if (patients == null || patients.Count == 0)
+{
+    <div class="alert alert-info">No patients found.</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                @foreach (var header in headers)
+                {
+                    <th>@header</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in patients)
+            {
+                <tr>
+                    @if (showTypeOnly)
+                    {
+                        <td>@p.GetType().FullName</td>
+                    }
+                    else
+                    {
+                        foreach (var prop in reflectedProps)
+                        {
+                            var value = prop.GetValue(p);
+                            <td>@(value?.ToString() ?? string.Empty)</td>
+                        }
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<object> patients = new();
+    private string[] headers = Array.Empty<string>();
+    private System.Reflection.PropertyInfo[] reflectedProps = Array.Empty<System.Reflection.PropertyInfo>();
+    private bool showTypeOnly;
+
+    protected override void OnInitialized()
+    {
+        // Load patients from the MockData class
+        var list = MockData.Patients();
+        patients = list != null ? list.Cast<object>().ToList() : new List<object>();
+
+        if (patients.Count == 0)
+        {
+            headers = Array.Empty<string>();
+            reflectedProps = Array.Empty<System.Reflection.PropertyInfo>();
+            showTypeOnly = false;
+            return;
+        }
+
+        // Determine which columns to show using reflection on the first item
+        var first = patients.First();
+        reflectedProps = first.GetType().GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+
+        if (reflectedProps.Length == 0)
+        {
+            // Fallback: the type has no public properties — show the CLR type name
+            headers = new[] { "Type" };
+            showTypeOnly = true;
+        }
+        else
+        {
+            headers = reflectedProps.Select(p => p.Name).ToArray();
+            showTypeOnly = false;
+        }
+    }
+}
