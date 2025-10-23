@@ -1,4 +1,5 @@
-
+@page "/vehicles"
+@rendermode InteractiveServer
 @namespace fs_2025_a_user_accounts_with_roles_74723.Components
 @using fs_user_accounts.Data
 @using AppApp.Domain
@@ -23,8 +24,7 @@
 
         <div class="col-md-3">
             <select class="form-select"
-                    @bind="transmissionFilter"
-                    @bind:event="onchange">
+                    @bind="transmissionFilter">
                 <option value="">Any transmission</option>
                 <option value="Manual">Manual</option>
                 <option value="Automatic">Automatic</option>
@@ -96,74 +96,27 @@ else
     private List<Vehicle> vehicles = new();
     private List<Vehicle> filtered = new();
 
-    private string _manufacturerFilter = string.Empty;
-    private string _modelFilter = string.Empty;
-    private string _transmissionFilter = string.Empty;
-    private int? _minYear;
-    private int? _maxYear;
+    private string manufacturerFilter = string.Empty;
+    private string modelFilter = string.Empty;
+    private string transmissionFilter = string.Empty;
+    private int? minYear;
+    private int? maxYear;
 
     protected override void OnInitialized()
     {
         vehicles = CarMockData.Vehicles();
         filtered = vehicles;
+
+        // Watch for filter updates in real time
+        _ = PeriodicFilterCheck();
     }
 
-    private string manufacturerFilter
+    private async Task PeriodicFilterCheck()
     {
-        get => _manufacturerFilter;
-        set
+        while (true)
         {
-            if (_manufacturerFilter != value)
-            {
-                _manufacturerFilter = value;
-                ApplyFilters();
-            }
-        }
-    }
-
-    private string modelFilter
-    {
-        get => _modelFilter;
-        set
-        {
-            if (_modelFilter != value)
-            {
-                _modelFilter = value;
-                ApplyFilters();
-            }
-        }
-    }
-
-    private string transmissionFilter
-    {
-        get => _transmissionFilter;
-        set
-        {
-            if (_transmissionFilter != value)
-            {
-                _transmissionFilter = value;
-                ApplyFilters();
-            }
-        }
-    }
-
-    private int? minYear
-    {
-        get => _minYear;
-        set
-        {
-            _minYear = value;
             ApplyFilters();
-        }
-    }
-
-    private int? maxYear
-    {
-        get => _maxYear;
-        set
-        {
-            _maxYear = value;
-            ApplyFilters();
+            await Task.Delay(300); // every 0.3 seconds refreshes live filters
         }
     }
 
@@ -172,16 +125,22 @@ else
         var query = vehicles.AsEnumerable();
 
         if (!string.IsNullOrWhiteSpace(manufacturerFilter))
-            query = query.Where(v =>
-                v.Manufacturer?.Contains(manufacturerFilter, StringComparison.OrdinalIgnoreCase) == true);
+        {
+            var mf = manufacturerFilter.Trim().ToLowerInvariant();
+            query = query.Where(v => v.Manufacturer?.Trim().ToLowerInvariant().Contains(mf) == true);
+        }
 
         if (!string.IsNullOrWhiteSpace(modelFilter))
-            query = query.Where(v =>
-                v.Model?.Contains(modelFilter, StringComparison.OrdinalIgnoreCase) == true);
+        {
+            var modf = modelFilter.Trim().ToLowerInvariant();
+            query = query.Where(v => v.Model?.Trim().ToLowerInvariant().Contains(modf) == true);
+        }
 
         if (!string.IsNullOrWhiteSpace(transmissionFilter))
-            query = query.Where(v =>
-                v.Transmission?.Equals(transmissionFilter, StringComparison.OrdinalIgnoreCase) == true);
+        {
+            var tf = transmissionFilter.Trim().ToLowerInvariant();
+            query = query.Where(v => v.Transmission?.Trim().ToLowerInvariant() == tf);
+        }
 
         if (minYear.HasValue)
             query = query.Where(v => v.Year >= minYear.Value);
@@ -195,11 +154,11 @@ else
 
     private void ResetFilters()
     {
-        _manufacturerFilter = string.Empty;
-        _modelFilter = string.Empty;
-        _transmissionFilter = string.Empty;
-        _minYear = null;
-        _maxYear = null;
+        manufacturerFilter = string.Empty;
+        modelFilter = string.Empty;
+        transmissionFilter = string.Empty;
+        minYear = null;
+        maxYear = null;
         filtered = vehicles.ToList();
         StateHasChanged();
     }
